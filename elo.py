@@ -64,10 +64,29 @@ def margin_multiplier(scoreA, scoreB):
     margin = abs(scoreA - scoreB)
     return math.log(margin + 1, 10) + 1
 
+def reset_ratings():
+    return {
+        "4139D": BASE_ELO,
+        "38657K": BASE_ELO,
+        "52077X": BASE_ELO,
+        "2989A": BASE_ELO,
+        "4139E": BASE_ELO,
+        "38657X": BASE_ELO,
+        "44448A": BASE_ELO,
+        "44110D": BASE_ELO,
+        "4139F": BASE_ELO,
+    }
+
+
 # -----------------------------
 # Process matches
 # -----------------------------
 def process_matches():
+
+    # Reset Elo
+    global teams
+    teams = reset_ratings()
+
     for i, match in enumerate(matches, 1):
         A1, A2, scoreA, scoreB, B1, B2 = match
 
