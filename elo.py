@@ -1,3 +1,11 @@
+# -----------------------------
+# Foreword
+# -----------------------------
+'''
+THIS IS AN INTERNAL 4139D MODEL OF THE 2026 THAI NATIONALS
+THIS IS NOT MEANT TO BE FULLY REFLECTIVE OF REAL-LIFE RESULTS
+'''
+
 import math
 
 # -----------------------------
@@ -53,6 +61,28 @@ matches = [ ("4139D", "38657K", 31, 44, "52077X", "2989A"),
             ("4139F", "38657X", 10, 53, "4139E", "4139D"),
 
 ]
+
+# -----------------------------
+# Learn scoring statistics
+# -----------------------------
+def compute_scoring_stats():
+    total_scores = []
+    margins = []
+
+    for A1, A2, scoreA, scoreB, B1, B2 in matches:
+        total_scores.append(scoreA + scoreB)
+        margins.append(scoreA - scoreB)
+
+    avg_total = sum(total_scores) / len(total_scores)
+    avg_margin = sum(abs(m) for m in margins) / len(margins)
+
+    return avg_total, avg_margin
+
+def elo_to_margin(elo_diff, avg_margin):
+    # Logistic-shaped curve: bigger Elo gap, bigger expected margin
+    return avg_margin * math.tanh(elo_diff / 400)
+
+
 
 # -----------------------------
 # Elo functions
@@ -161,6 +191,15 @@ def predict_match():
     expectedA = expected_score(ratingA, ratingB)
     expectedB = 1 - expectedA
 
+    # Scoring model
+    avg_total, avg_margin = compute_scoring_stats()
+    elo_diff = ratingA - ratingB
+    expected_margin = elo_to_margin(elo_diff, avg_margin)
+
+    predicted_red = (avg_total + expected_margin) / 2
+    predicted_blue = (avg_total - expected_margin) / 2
+
+    # Winner
     if abs(expectedA - expectedB) < 1e-6:
         predicted = "Too close to call (50/50)"
     elif expectedA > expectedB:
@@ -181,7 +220,12 @@ def predict_match():
     print(f"Red Alliance: {expectedA*100:.1f}%")
     print(f"Blue Alliance: {expectedB*100:.1f}%")
 
-    print(f"Prediction: {predicted}")
+    print(f"\nPredicted score:")
+    print(f"Red Alliance:  {round(predicted_red)}")
+    print(f"Blue Alliance: {round(predicted_blue)}")
+
+    print(f"\nPrediction: {predicted}")
+
 # -----------------------------
 # Main loop
 # -----------------------------
